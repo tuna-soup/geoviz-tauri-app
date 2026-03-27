@@ -12,9 +12,21 @@ app.innerHTML = `
   <div class="shell">
     <aside class="sidebar">
       <h1>geoviz tauri app</h1>
-      <button id="toggle-wiggle">Switch To Wiggles</button>
-      <button id="zoom-corr-in">Zoom Correlation In</button>
-      <button id="zoom-corr-out">Zoom Correlation Out</button>
+      <div class="group">
+        <strong>Seismic</strong>
+        <button id="toggle-wiggle">Switch To Wiggles</button>
+        <button id="seismic-mode-cursor">Seismic Cursor Mode</button>
+        <button id="seismic-toggle-crosshair">Toggle Seismic Crosshair</button>
+      </div>
+      <div class="group">
+        <strong>Correlation</strong>
+        <button id="zoom-corr-in">Zoom Correlation In</button>
+        <button id="zoom-corr-out">Zoom Correlation Out</button>
+        <button id="corr-mode-cursor">Correlation Cursor Mode</button>
+        <button id="corr-mode-top-edit">Correlation Top Edit Mode</button>
+        <button id="corr-mode-lasso">Correlation Lasso Mode</button>
+        <button id="corr-toggle-crosshair">Toggle Correlation Crosshair</button>
+      </div>
       <div class="readout" id="readout">Ready.</div>
     </aside>
     <main class="main">
@@ -37,6 +49,8 @@ seismicController.mount(seismicHost);
 seismicController.setSection(createMockSection());
 corrController.mount(corrHost);
 corrController.setPanel(createMockCorrelationPanel());
+seismicHost.tabIndex = 0;
+corrHost.tabIndex = 0;
 
 let wiggle = false;
 document.querySelector<HTMLButtonElement>("#toggle-wiggle")?.addEventListener("click", (event) => {
@@ -46,8 +60,31 @@ document.querySelector<HTMLButtonElement>("#toggle-wiggle")?.addEventListener("c
     event.currentTarget.textContent = wiggle ? "Switch To Heatmap" : "Switch To Wiggles";
   }
 });
+document.querySelector<HTMLButtonElement>("#seismic-mode-cursor")?.addEventListener("click", () => {
+  seismicController.setPrimaryMode("cursor");
+});
+document.querySelector<HTMLButtonElement>("#seismic-toggle-crosshair")?.addEventListener("click", () => {
+  seismicController.toggleCrosshair();
+});
 document.querySelector<HTMLButtonElement>("#zoom-corr-in")?.addEventListener("click", () => corrController.zoomVertical(1.25));
 document.querySelector<HTMLButtonElement>("#zoom-corr-out")?.addEventListener("click", () => corrController.zoomVertical(0.8));
+document.querySelector<HTMLButtonElement>("#corr-mode-cursor")?.addEventListener("click", () => {
+  corrController.setPrimaryMode("cursor");
+});
+document.querySelector<HTMLButtonElement>("#corr-mode-top-edit")?.addEventListener("click", () => {
+  corrController.setPrimaryMode("topEdit");
+});
+document.querySelector<HTMLButtonElement>("#corr-mode-lasso")?.addEventListener("click", () => {
+  corrController.setPrimaryMode("lassoSelect");
+});
+document.querySelector<HTMLButtonElement>("#corr-toggle-crosshair")?.addEventListener("click", () => {
+  corrController.toggleCrosshair();
+});
+
+seismicHost.addEventListener("focus", () => seismicController.focus());
+seismicHost.addEventListener("blur", () => seismicController.blur());
+corrHost.addEventListener("focus", () => corrController.focus());
+corrHost.addEventListener("blur", () => corrController.blur());
 
 seismicHost.addEventListener("pointermove", (event) => {
   const point = toLocalPoint(seismicHost, event);
@@ -57,14 +94,32 @@ seismicHost.addEventListener("pointermove", (event) => {
     readout.textContent = `Seismic trace ${probe.traceIndex}, sample ${probe.sampleIndex}, amplitude ${probe.amplitude.toFixed(4)}`;
   }
 });
+seismicHost.addEventListener("pointerdown", () => seismicHost.focus());
+seismicHost.addEventListener("pointerleave", () => seismicController.clearPointer());
 
 corrHost.addEventListener("pointermove", (event) => {
   const point = toCorrelationLocalPoint(corrHost, event);
-  corrController.updatePointer(point.x, point.y, corrHost.clientWidth, corrHost.clientHeight);
+  corrController.handlePointerMove(point.x, point.y, corrHost.clientWidth, corrHost.clientHeight);
   const probe = corrController.getState().probe;
   if (probe) {
     readout.textContent = `${probe.wellName} ${probe.trackTitle} depth ${probe.panelDepth.toFixed(1)} native ${probe.nativeDepth.toFixed(1)}`;
   }
+});
+corrHost.addEventListener("pointerdown", (event) => {
+  corrHost.focus();
+  corrHost.setPointerCapture(event.pointerId);
+  const point = toCorrelationLocalPoint(corrHost, event);
+  corrController.handlePointerDown(point.x, point.y, corrHost.clientWidth, corrHost.clientHeight);
+});
+corrHost.addEventListener("pointerup", (event) => {
+  if (corrHost.hasPointerCapture(event.pointerId)) {
+    corrHost.releasePointerCapture(event.pointerId);
+  }
+  corrController.handlePointerUp();
+});
+corrHost.addEventListener("pointerleave", () => corrController.clearPointer());
+corrHost.addEventListener("keydown", (event) => {
+  corrController.handleKeyDown(event.key);
 });
 corrHost.addEventListener("wheel", (event) => {
   const scrollHost = getCorrelationScrollHost(corrHost);

@@ -26,6 +26,21 @@ body {
   gap: 14px;
 }
 
+.group {
+  display: grid;
+  gap: 10px;
+  padding: 12px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.group strong {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #a9bcc7;
+}
+
 .sidebar h1 {
   margin: 0;
 }
@@ -51,6 +66,7 @@ body {
   border-radius: 16px;
   overflow: hidden;
   background: rgba(3, 9, 14, 0.42);
+  outline: none;
 }
 
 .readout {
@@ -60,4 +76,3 @@ body {
   white-space: pre-wrap;
   font-size: 12px;
 }
-
