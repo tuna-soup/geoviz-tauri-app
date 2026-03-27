@@ -1,0 +1,63 @@
+html,
+body,
+#app {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  font-family: "Segoe UI", sans-serif;
+  background: #0d1820;
+  color: #edf2f5;
+}
+
+.shell {
+  min-height: 100%;
+  display: grid;
+  grid-template-columns: 280px 1fr;
+}
+
+.sidebar {
+  padding: 20px;
+  background: rgba(2, 8, 14, 0.62);
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
+  display: grid;
+  align-content: start;
+  gap: 14px;
+}
+
+.sidebar h1 {
+  margin: 0;
+}
+
+.sidebar button {
+  padding: 10px 12px;
+  border: 0;
+  border-radius: 10px;
+  background: #e8eff3;
+  color: #08131b;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.main {
+  padding: 20px;
+  display: grid;
+  gap: 20px;
+}
+
+.viewer {
+  height: 380px;
+  border-radius: 16px;
+  overflow: hidden;
+  background: rgba(3, 9, 14, 0.42);
+}
+
+.readout {
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.2);
+  white-space: pre-wrap;
+  font-size: 12px;
+}
+
